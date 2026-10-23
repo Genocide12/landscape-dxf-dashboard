@@ -80,3 +80,21 @@ Work Log:
 
 Stage Summary:
 - download/: Ландшафтная_карта_участка.png/.svg, Ландшафтный_план_участка_А3.pdf, Дашборд_Ландшафтная_карта.png, Демо-участок_20x30.dxf, Сценарий_видеоурока (docx)
+
+---
+Task ID: 6
+Agent: main (Z.ai)
+Task: «Там ничего нет! Добавь скриншоты активные на страницу дашборда» — живой контент на GitHub Pages
+
+Work Log:
+- Диагностика: GitHub Pages отдавал полный HTML (19 КБ), интерактив работал (кнопка демо на живом сайте), но при первом входе виден только пустой стейт «Схема не загружена» — контента нет
+- Ассеты в public/gallery/: map.png/svg, dashboard.png, plan-preview.png (pdftoppm 150 dpi), plan.pdf, demo.dxf — имена ASCII для URL
+- Новый компонент src/components/Gallery.tsx: 3 карточки-«активных скриншота» (клик → лайтбокс Dialog с зумом ×1.8 по клику), кнопки скачивания PNG/SVG/PDF/DXF с basePath (NEXT_PUBLIC_BASE_PATH инлайнится на gh-сборке)
+- page.tsx: вкладки переведены на controlled (value/onValueChange), добавлена вкладка «Галерея» (Images), в пустой стейт «Участка» добавлены 3 живые миниатюры + кнопка перехода в галерею
+- ESLint чистый (убраны лишние eslint-disable); локально и на живом сайте проверено агент-браузером: миниатюра → галерея, карточка → лайтбокс, Esc/Close
+- VLM-проверки: галерея GOOD, лайтбокс GOOD, пустой стейт с миниатюрами GOOD (live-empty.png снят до reload — повторён live-empty2.png)
+- Исправлен deploy-gh-pages.sh: gh-pages — orphan-ветка, добавлен --force (иначе non-fast-forward)
+- Деплой: main (3e8bf2f + Gallery) и gh-pages обновлены; Pages отдал новую версию через ~20 сек; gallery/map.png и plan.pdf → HTTP 200
+
+Stage Summary:
+- На дашборде теперь есть живой контент при первом входе: миниатюры карт в пустом стейте + вкладка «Галерея» с лайтбоксом и скачиванием файлов
