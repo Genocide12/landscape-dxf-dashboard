@@ -32,3 +32,7 @@ backup/
 .DS_Store
 Thumbs.db
 *.swp
+# песочница: скиллы и локальные артефакты не в репо
+skills/
+.zscripts/
+agent-ctx/
