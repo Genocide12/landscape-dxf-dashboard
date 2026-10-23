@@ -36,7 +36,8 @@ git rm -rqf . 2>/dev/null || true
 cp -r "$OLDPWD/out/." .
 git add -A
 git commit -qm "GitHub Pages build: $(date '+%Y-%m-%d %H:%M')"
-git push -q origin gh-pages
+# gh-pages — артефактная orphan-ветка: обычный пуш всегда non-fast-forward
+git push -q --force origin gh-pages
 cd - >/dev/null
 rm -rf "$TMP"
 
