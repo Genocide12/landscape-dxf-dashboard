@@ -8,18 +8,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { MapCanvas } from '@/components/MapCanvas';
 import { ChatPanel } from '@/components/ChatPanel';
+import { Gallery } from '@/components/Gallery';
 import { decodeDxf, parseDxf, type DxfDocument } from '@/lib/dxf/parser';
 import { generateDemoDxf } from '@/lib/dxf/demo';
 import { classifyLayer, ZONES, type ZoneId } from '@/lib/dxf/classify';
 import { summarize, formatArea, formatLen } from '@/lib/geometry';
 import { exportPlanPdf } from '@/lib/pdf-export';
 import { toast } from 'sonner';
-import { Upload, Play, FileText, Eye, EyeOff, TriangleAlert, Github, Map, MessagesSquare } from 'lucide-react';
+import { Upload, Play, FileText, Eye, EyeOff, TriangleAlert, Github, Map, MessagesSquare, Images } from 'lucide-react';
+
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+const asset = (p: string) => `${BASE}${p}`;
+
+type TabValue = 'plot' | 'gallery' | 'chat';
 
 const MAX_SIZE = 15 * 1024 * 1024;
 
 export default function Home() {
   const [doc, setDoc] = useState<DxfDocument | null>(null);
+  const [tab, setTab] = useState<TabValue>('plot');
   const [hiddenZones, setHiddenZones] = useState<Set<ZoneId>>(new Set());
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
@@ -140,11 +147,15 @@ export default function Home() {
       </header>
 
       <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-4">
-        <Tabs defaultValue="plot" className="w-full">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)} className="w-full">
           <TabsList className="mb-4 border border-zinc-300 bg-zinc-50 font-mono">
             <TabsTrigger value="plot" className="gap-1.5 font-mono data-[state=active]:bg-zinc-900 data-[state=active]:text-white">
               <Map className="h-3.5 w-3.5" />
               Участок
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="gap-1.5 font-mono data-[state=active]:bg-zinc-900 data-[state=active]:text-white">
+              <Images className="h-3.5 w-3.5" />
+              Галерея
             </TabsTrigger>
             <TabsTrigger value="chat" className="gap-1.5 font-mono data-[state=active]:bg-zinc-900 data-[state=active]:text-white">
               <MessagesSquare className="h-3.5 w-3.5" />
@@ -319,15 +330,51 @@ export default function Home() {
                     exporting={exporting}
                   />
                 ) : (
-                  <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 rounded-sm border border-dashed border-zinc-300 bg-[linear-gradient(#f4f4f5_1px,transparent_1px),linear-gradient(90deg,#f4f4f5_1px,transparent_1px)] bg-[size:24px_24px]">
+                  <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 rounded-sm border border-dashed border-zinc-300 bg-[linear-gradient(#f4f4f5_1px,transparent_1px),linear-gradient(90deg,#f4f4f5_1px,transparent_1px)] bg-[size:24px_24px] p-4">
                     <span className="font-mono text-sm text-zinc-400">Схема не загружена</span>
                     <span className="max-w-xs text-center font-mono text-[11px] text-zinc-400">
                       Перетащите DXF-файл в панель слева или нажмите «Загрузить демо-участок»
                     </span>
+                    {/* живые миниатюры готовых карт → галерея */}
+                    <div className="mt-2 grid w-full max-w-lg grid-cols-3 gap-2">
+                      {[
+                        { src: '/gallery/map.png', alt: 'Ландшафтная карта участка' },
+                        { src: '/gallery/plan-preview.png', alt: 'Печатный план PDF A3' },
+                        { src: '/gallery/dashboard.png', alt: 'Дашборд в работе' },
+                      ].map((t) => (
+                        <button
+                          key={t.src}
+                          type="button"
+                          onClick={() => setTab('gallery')}
+                          className="group overflow-hidden border border-zinc-300 bg-white transition-colors hover:border-zinc-900"
+                          title={`${t.alt} — открыть в галерее`}
+                        >
+                          <img
+                            src={asset(t.src)}
+                            alt={t.alt}
+                            className="h-20 w-full bg-white p-1 object-contain transition-opacity group-hover:opacity-85"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 border-zinc-300 font-mono text-xs"
+                      onClick={() => setTab('gallery')}
+                    >
+                      <Images className="h-3.5 w-3.5" />
+                      Галерея готовых карт
+                    </Button>
                   </div>
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          {/* ------------------------- вкладка «Галерея» ------------------------- */}
+          <TabsContent value="gallery" className="mt-0">
+            <Gallery />
           </TabsContent>
 
           {/* ------------------------- вкладка «AI-консультант» ------------------------- */}
